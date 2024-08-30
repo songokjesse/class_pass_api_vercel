@@ -7,7 +7,7 @@ require("dotenv").config();
 
 const router = express.Router();
 
-router.post('/attendance', authenticateToken, attendance);
+router.post('/attendance', attendance);
 router.post('/register', register);
 router.post('/login',login);
 

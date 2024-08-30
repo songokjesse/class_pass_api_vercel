@@ -87,4 +87,7 @@ const login = [
         }
     }];
 
-module.exports = { authenticateToken, register, login };
+
+
+
+module.exports = { authenticateToken, register, login};
