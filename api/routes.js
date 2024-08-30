@@ -2,10 +2,12 @@ const express = require("express");
 const { authenticateToken, register, login } = require("./auth");
 const db = require('./db/db');
 const { users } = require("./db/schema");
+const {attendance} = require("./attendance");
 require("dotenv").config();
 
 const router = express.Router();
 
+router.post('/attendance', authenticateToken, attendance);
 router.post('/register', register);
 router.post('/login',login);
 

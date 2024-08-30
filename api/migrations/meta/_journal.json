@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1724918695013,
-      "tag": "0000_talented_sage",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1724920814575,
-      "tag": "0001_gifted_gateway",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1724953875780,
-      "tag": "0002_long_carnage",
+      "when": 1725004281522,
+      "tag": "0000_bizarre_titania",
       "breakpoints": true
     }
   ]
