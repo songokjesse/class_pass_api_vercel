@@ -1,0 +1,36 @@
+{
+  "name": "class_pass_api_vercel",
+  "version": "1.0.0",
+  "description": "A Backend application for ClassPass mobile application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./api/index.js",
+    "dev": "nodemon ./api/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/songokjesse/class_pass_api_vercel.git"
+  },
+  "author": "Jesse Songok",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/songokjesse/class_pass_api_vercel/issues"
+  },
+  "homepage": "https://github.com/songokjesse/class_pass_api_vercel#readme",
+  "dependencies": {
+    "@libsql/client": "^0.10.0",
+    "argon2": "^0.41.0",
+    "cors": "^2.8.5",
+    "drizzle-orm": "^0.33.0",
+    "express": "^4.19.2",
+    "express-validator": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.24.2",
+    "nodemon": "^3.1.4"
+  }
+}
