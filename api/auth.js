@@ -35,7 +35,7 @@ const register = [
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.mapped() });
+            return res.status(422).json({ errors: errors.mapped() });
         }
         try {
             const { name, email, password, admission_number } = req.body;
@@ -58,7 +58,7 @@ const register = [
             res.status(201).json({ token });
         } catch (e) {
             console.error('Registration error:', e);
-            res.status(500).json( { errors: [{ msg: 'An error occurred during registration.' }] });
+            res.status(422).json( { errors: [{ msg: 'An error occurred during registration.' }] });
         }
     }
 ];
@@ -69,7 +69,7 @@ const login = [
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.mapped() });
+            return res.status(422).json({ errors: errors.mapped() });
         }
         try {
             const { email, password } = req.body;
@@ -83,7 +83,7 @@ const login = [
             }
         } catch (e) {
             console.error('Login error:', e);
-            res.status(500).json({ error: [{ msg: 'An error occurred during login.'}]  });
+            res.status(422).json({ error: [{ msg: 'An error occurred during login.'}]  });
         }
     }];
 
