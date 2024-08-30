@@ -1,93 +1,63 @@
 const jwt = require('jsonwebtoken');
-const argon2 = require('argon2');
-const { eq } = require("drizzle-orm");
-const config = require('./config');
+const bcrypt = require('bcryptjs');
 const db = require('./db/db');
-const { users, students} = require('./db/schema');
-const {check, validationResult} = require("express-validator");
+const { users } = require('./db/schema');
+const { eq } = require('drizzle-orm');
 
-
-const generateToken = (user) => {
-    return jwt.sign({ id: user.id, email: user.email }, config.JWT_SECRET, {
-        expiresIn: '1w',
-    });
-};
-
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (token == null) return res.status(401).json( { error:  [{ msg: 'No token provided.' }] });
+    if (token == null) return null;
 
-    jwt.verify(token, config.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error:  [{ msg: 'Invalid token.' }] });
-        req.user = user;
-        next();
-    });
+    try {
+        return jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        return null;
+    }
 };
 
+const register = async (req, res) => {
+    const { name, email, password } = req.body;
 
-const register = [
-    check('name').not().isEmpty().withMessage('The name field is required.'),
-    check('admission_number').not().isEmpty().withMessage('The admission_number field is required.'),
-    check('email').not().isEmpty().withMessage('The email field is required.').isEmail().withMessage('The email must be a valid email address.'),
-    check('password').not().isEmpty().withMessage('The password field is required.').isLength({ min: 8 }).withMessage('The password must be at least 8 characters.'),
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(422).json({ errors: errors.mapped() });
+    try {
+        // Check if user already exists
+        const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        if (existingUser.length > 0) {
+            return res.status(422).json({ message: 'User with this email already exists' });
         }
-        try {
-            const { name, email, password, admission_number } = req.body;
-            const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
-            if (existingUser.length > 0) return res.status(400).json({ errors: [{ email: ["The email has already been taken." ]}] });
 
-            const hashedPassword = await argon2.hash(password);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [newUser] = await db.insert(users).values({
+            name,
+            email,
+            password: hashedPassword,
+        }).returning();
 
-            const result = await db.insert(users).values({
-                email,
-                password: hashedPassword,
-                name,
-            }).returning();
-            await db.insert(students).values({
-                userId: result[0].id,
-                admission_number: admission_number.toUpperCase()
-            });
-            const user = { id: result[0].id, email: result[0].email, name: result[0].name };
-            const token = generateToken(user);
-            res.status(201).json({ token });
-        } catch (e) {
-            console.error('Registration error:', e);
-            res.status(422).json( { errors: [{ msg: 'An error occurred during registration.' }] });
-        }
+        res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(422).json({ message: 'An error occurred during registration' });
     }
-];
+};
 
-const login = [
-    check('email').not().isEmpty().withMessage('The email field is required.').isEmail().withMessage('The email must be a valid email address.'),
-    check('password').not().isEmpty().withMessage('The password field is required.').isLength({ min: 8 }).withMessage('The password must be at least 8 characters.'),
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(422).json({ errors: errors.mapped() });
+const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(422).json({ message: 'Invalid credentials' });
         }
-        try {
-            const { email, password } = req.body;
-            const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-            if (user.length > 0 && await argon2.verify(user[0].password, password)) {
-                const token = generateToken(user[0]);
-                res.status(200).json({ token });
-            } else {
-                res.status(401).json({ error: [{ msg: 'Invalid credentials.' }]  });
-            }
-        } catch (e) {
-            console.error('Login error:', e);
-            res.status(422).json({ error: [{ msg: 'An error occurred during login.'}]  });
-        }
-    }];
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(422).json({ message: 'An error occurred during login' });
+    }
+};
 
-
-
-
-module.exports = { authenticateToken, register, login};
+module.exports = { authenticateToken, register, login };
