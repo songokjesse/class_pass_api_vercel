@@ -11,7 +11,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', routes);
-app.get("/", (req, res) => res.send("Express on Vercel"));
+app.get("/", (req, res) => res.json("Express on Vercel"));
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
