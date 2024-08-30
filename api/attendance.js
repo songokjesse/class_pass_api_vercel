@@ -16,14 +16,14 @@ const attendance = [
             // Check if student exists
             const studentResult = await db.select().from(students).where(eq(students.userId, req.body.user_id)).limit(1);
             if (studentResult.length === 0) {
-                return res.status(404).json({ message: 'Student not found' });
+                return res.status(422).json({ message: 'Student not found' });
             }
             const student = studentResult[0];
 
             // Check if timetable exists
             const timetableResult = await db.select().from(timetables).where(eq(timetables.id, req.body.timetable_id)).limit(1);
             if (timetableResult.length === 0) {
-                return res.status(404).json({ message: 'Timetable not found' });
+                return res.status(422).json({ message: 'Timetable not found' });
             }
 
             // Create attendance record
@@ -38,7 +38,7 @@ const attendance = [
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'An error occurred while processing your request' });
+            res.status(422).json({ message: 'An error occurred while processing your request' });
         }
     }
 ];
